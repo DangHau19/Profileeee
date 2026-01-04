@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoàng Đăng Hậu | Information Technology</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fira Code (Monospace for coding feel) -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neon: '#00f3ff',
+                        dark: '#0a0a0a',
+                        glass: 'rgba(20, 20, 20, 0.7)',
+                    },
+                    fontFamily: {
+                        mono: ['"Fira Code"', 'monospace'],
+                        sans: ['"Inter"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Canvas Background */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15; /* Dimmed so text is readable */
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00f3ff;
+            border-radius: 4px;
+        }
+
+        /* Neon Text Glow */
+        .text-neon-glow {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.7), 0 0 20px rgba(0, 243, 255, 0.5);
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 243, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            border-color: #00f3ff;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+
+        /* Typing Cursor */
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            background-color: #00f3ff;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Nav Link Hover */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: #00f3ff;
+            transition: width 0.3s;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Active Nav Link State */
+        .nav-link.active {
+            color: #00f3ff;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        /* Skill Bar Animation */
+        @keyframes loadSkill {
+            from { width: 0; }
+        }
+        .skill-fill {
+            animation: loadSkill 2s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-neon selection:text-dark">
+
+    <!-- Background Animation -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 start-0 border-b border-white/10 bg-dark/80 backdrop-blur-md">
+        <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+            <a href="#" class="flex items-center space-x-3 rtl:space-x-reverse">
+                <span class="self-center text-2xl font-bold whitespace-nowrap font-mono text-neon-glow">&lt;Dev/&gt;</span>
+            </a>
+            <button id="mobile-menu-btn" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-400 rounded-lg md:hidden hover:bg-white/10 focus:outline-none">
+                <span class="sr-only">Open main menu</span>
+                <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15"/>
+                </svg>
+            </button>
+            <div class="hidden w-full md:block md:w-auto" id="navbar-default">
+                <ul class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-white/10 rounded-lg md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 bg-black/50 md:bg-transparent">
+                    <li><a href="#home" class="nav-link block py-2 px-3 text-white hover:text-neon md:p-0 transition-colors">Trang Chủ</a></li>
+                    <li><a href="#about" class="nav-link block py-2 px-3 text-white hover:text-neon md:p-0 transition-colors">Giới Thiệu</a></li>
+                    <li><a href="#skills" class="nav-link block py-2 px-3 text-white hover:text-neon md:p-0 transition-colors">Kỹ Năng</a></li>
+                    <li><a href="#projects" class="nav-link block py-2 px-3 text-white hover:text-neon md:p-0 transition-colors">Dự Án</a></li>
+                    <li><a href="#contact" class="nav-link block py-2 px-3 text-white hover:text-neon md:p-0 transition-colors">Liên Hệ</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center relative pt-20 section-spy">
+        <div class="text-center px-4 max-w-4xl mx-auto z-10">
+            <div class="mb-4 inline-block px-4 py-1 border border-neon rounded-full bg-neon/10 text-neon text-sm font-mono animate-pulse">
+                System: Online
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-4 text-white">
+                Welcome, tôi là <span class="text-neon text-neon-glow">Hoàng Đăng Hậu</span>
+            </h1>
+            <h2 class="text-xl md:text-3xl text-gray-400 font-mono mb-8 h-12">
+                &gt; <span id="typing-text"></span><span class="cursor">&nbsp;</span>
+            </h2>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#projects" class="px-8 py-3 bg-neon text-dark font-bold rounded hover:bg-cyan-400 transition transform hover:scale-105 shadow-[0_0_20px_rgba(0,243,255,0.5)]">
+                    Xem Dự Án
+                </a>
+                <a href="#contact" class="px-8 py-3 border border-white text-white font-bold rounded hover:bg-white hover:text-dark transition transform hover:scale-105">
+                    Liên Hệ Tôi
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-dark/50 section-spy">
+        <div class="max-w-screen-xl mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center"><span class="text-neon">01.</span> Giới Thiệu</h2>
+            <div class="flex flex-col md:flex-row gap-10 items-center">
+                <div class="w-full md:w-1/3 flex justify-center">
+                    <!-- Adjusted Image Container: Added mt-4 to move it down slightly -->
+                    <div class="relative w-64 h-64 md:w-80 md:h-80 mt-15">
+                        <div class="absolute inset-0 border-2 border-neon rounded-lg transform translate-x-4 translate-y-4"></div>
+                        <!-- Placeholder Avatar with Image -->
+                        <div class="absolute inset-0 bg-gray-800 rounded-lg overflow-hidden border border-gray-700 flex items-center justify-center group">
+                             <!-- Removed opacity-80 and hover effect for clear image -->
+                             <img src="20240421_111759.jpg" alt="Hoàng Đăng Hậu" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-2/3 space-y-4 text-lg text-gray-300">
+                    <p>
+                        Xin chào! Tôi là một <span class="text-neon font-semibold">Full Stack Developer</span> đam mê xây dựng các ứng dụng web tối ưu và đẹp mắt. Bắt đầu hành trình lập trình từ năm 2024 và không ngừng học hỏi những công nghệ mới nhất.
+                    </p>
+                    <p>
+                        Chuyên giải quyết các vấn đề phức tạp bằng clean code và hiệu quả. Mục tiêu tạo ra những sản phẩm mang lại giá trị thực tế cho người dùng.
+                    </p>
+                    
+                    <!-- Updated Personal Info Table -->
+                    <div class="mt-8 bg-white/5 p-6 rounded-lg border border-white/10">
+                        <h3 class="text-neon font-mono mb-4 text-xl border-b border-white/10 pb-2">Thông Tin Cá Nhân</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-base">
+                            <div class="flex items-center"><span class="text-neon w-24 font-bold">Họ tên:</span> <span>Hoàng Đăng Hậu</span></div>
+                            <div class="flex items-center"><span class="text-neon w-24 font-bold">Ngày sinh:</span> <span>19/11/2006</span></div>
+                            <div class="flex items-center"><span class="text-neon w-24 font-bold">Email:</span> <span class="break-all">hoangdanghau19@gmail.com</span></div>
+                            <div class="flex items-center"><span class="text-neon w-24 font-bold">Điện thoại:</span> <span>0979462127</span></div>
+                            <div class="flex items-center"><span class="text-neon w-24 font-bold">Học vấn:</span> <span>Đại học Sài Gòn </span></div>
+                            <div class="flex items-center"><span class="text-neon w-24 font-bold">Địa chỉ:</span> <span>21/18B, Bình Lợi, P.Bình Lợi Tây, TP.HCM</span></div>
+                            <div class="flex items-center"><span class="text-neon w-24 font-bold">Home:</span> <span>Thôn 3, Ea Khăl, Đăk Lăk </span></div>
+                            <div class="flex items-center"><span class="text-neon w-24 font-bold">Quê quán:</span> <span>Kim Liên, Nghệ An</span></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mt-6 font-mono text-sm">
+                        <div class="flex items-center"><i class="fas fa-caret-right text-neon mr-2"></i> Freelance</div>
+                        <div class="flex items-center"><i class="fas fa-caret-right text-neon mr-2"></i> Guitarist</div>
+                        <div class="flex items-center"><i class="fas fa-caret-right text-neon mr-2"></i> Music Lover</div>
+                        <div class="flex items-center"><i class="fas fa-caret-right text-neon mr-2"></i> Rapper</div>
+                        <div class="flex items-center"><i class="fas fa-caret-right text-neon mr-2"></i> Photographer</div>
+                        <div class="flex items-center"><i class="fas fa-caret-right text-neon mr-2"></i> Image/Video Editor</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-20 section-spy">
+        <div class="max-w-screen-xl mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center"><span class="text-neon">02.</span> Kỹ Năng</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <!-- Tech Stack Tags -->
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="text-xl font-bold mb-6 text-white flex items-center">
+                        <i class="fas fa-code text-neon mr-3"></i> Ngôn ngữ & Framework
+                    </h3>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-neon text-sm hover:border-neon transition">JavaScript (ES6+)</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-neon text-sm hover:border-neon transition">ReactJS</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-neon text-sm hover:border-neon transition">Node.js</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-neon text-sm hover:border-neon transition">TypeScript</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-neon text-sm hover:border-neon transition">Tailwind CSS</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-neon text-sm hover:border-neon transition">HTML5/CSS3</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-neon text-sm hover:border-neon transition">Python</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-neon text-sm hover:border-neon transition">SQL / MongoDB</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-neon text-sm hover:border-neon transition">C++</span>
+                    </div>
+                </div>
+
+                <!-- Tools & Others -->
+                <div class="glass-card p-6 rounded-xl">
+                    <h3 class="text-xl font-bold mb-6 text-white flex items-center">
+                        <i class="fas fa-tools text-neon mr-3"></i> Công cụ & Khác
+                    </h3>
+                    <div class="flex flex-wrap gap-3">
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-gray-300 text-sm hover:border-white transition">Git / GitHub</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-gray-300 text-sm hover:border-white transition">Packet Tracer</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-gray-300 text-sm hover:border-white transition">VS Code</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-gray-300 text-sm hover:border-white transition">DaVinci Resolve</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-gray-300 text-sm hover:border-white transition">Auditon</span>
+                        <span class="px-3 py-1 bg-gray-800 border border-gray-600 rounded text-gray-300 text-sm hover:border-white transition">Photoshop</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bars Example -->
+            <div class="mt-10 max-w-2xl mx-auto">
+                 <div class="mb-4">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-base font-medium text-white">Frontend Development</span>
+                        <span class="text-sm font-medium text-neon">85%</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2.5">
+                        <div class="bg-neon h-2.5 rounded-full skill-fill" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-base font-medium text-white">Backend Development</span>
+                        <span class="text-sm font-medium text-neon">50%</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-2.5">
+                        <div class="bg-neon h-2.5 rounded-full skill-fill" style="width: 50%; animation-delay: 0.2s;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="py-20 bg-dark/50 section-spy">
+        <div class="max-w-screen-xl mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center"><span class="text-neon">03.</span> Dự Án Nổi Bật</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Project 1 -->
+                <div class="glass-card rounded-xl overflow-hidden group">
+                    <div class="h-48 bg-gray-800 relative overflow-hidden">
+                        <!-- Placeholder for Project Image -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-900 to-blue-900 group-hover:scale-110 transition duration-500"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-4xl text-white/20 font-bold">E-COM</div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-white group-hover:text-neon transition">E-Commerce Platform</h3>
+                            <div class="flex space-x-3">
+                                <a href="https://github.com/DangHau19/Web-Store-.git" class="text-gray-400 hover:text-neon"><i class="fab fa-github text-xl"></i></a>
+                                <a class="text-gray-400 hover:text-neon"><i class="fas fa-external-link-alt text-xl"></i></a>
+                            </div>
+                        </div>
+                        <p class="text-gray-400 text-sm mb-4">
+                            Một trang web thương mại điện tử với tính năng giỏ hàng, thanh toán và quản trị admin.
+                        </p>
+                        <div class="flex flex-wrap gap-2 text-xs font-mono text-neon">
+                            <span>React</span>
+                            <span>Node.js</span>
+                            <span>HTML/CSS</span>
+                            <span>Stripe</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="glass-card rounded-xl overflow-hidden group">
+                    <div class="h-48 bg-gray-800 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-green-900 to-teal-900 group-hover:scale-110 transition duration-500"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-4xl text-white/20 font-bold">E-COM</div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-white group-hover:text-neon transition">E-Commerce Platform</h3>
+                            <div class="flex space-x-3">
+                                <a href="https://github.com/DangHau19/Van-Phong-Pham-.git" class="text-gray-400 hover:text-neon"><i class="fab fa-github text-xl"></i></a>
+                                <a href="#" class="text-gray-400 hover:text-neon"><i class="fas fa-external-link-alt text-xl"></i></a>
+                            </div>
+                        </div>
+                        <p class="text-gray-400 text-sm mb-4">
+                            Ứng dụng cửa hàng văn phòng phẩm với giao diện thân thiện và chức năng quản lý sản phẩm (Console).
+                        </p>
+                        <div class="flex flex-wrap gap-2 text-xs font-mono text-neon">
+                            <span>Vue.js</span>
+                            <span>Firebase</span>
+                            <span>Tailwind</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="glass-card rounded-xl overflow-hidden group">
+                    <div class="h-48 bg-gray-800 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-red-900 to-orange-900 group-hover:scale-110 transition duration-500"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-4xl text-white/20 font-bold">MORE</div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-white group-hover:text-neon transition">Many small projects</h3>
+                            <div class="flex space-x-3">
+                                <a href="#" class="text-gray-400 hover:text-neon"><i class="fab fa-github text-xl"></i></a>
+                                <a href="#" class="text-gray-400 hover:text-neon"><i class="fas fa-external-link-alt text-xl"></i></a>
+                            </div>
+                        </div>
+                        <p class="text-gray-400 text-sm mb-4">
+                            Nhiều dự án nhỏ xây dựng từ C++, Python, HTML, CSS, ... nhằm nâng cao kỹ năng lập trình và giải quyết các bài toán thực tế.
+                        </p>
+                        <div class="flex flex-wrap gap-2 text-xs font-mono text-neon">
+                            <span>C++</span>
+                            <span>Python</span>
+                            <span>HTML/CSS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 section-spy">
+        <div class="max-w-screen-md mx-auto px-4 text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6"><span class="text-neon">04.</span> Liên Hệ</h2>
+            <p class="text-gray-400 mb-10 text-lg">
+                Một số thông tin liên hệ. Hãy điền vào form bên dưới để gửi mail trực tiếp cho tôi nhé!
+            </p>
+            
+            <!-- Contact Form Wrapper -->
+            <div class="glass-card p-6 md:p-8 rounded-xl max-w-lg mx-auto mb-12 text-left">
+                <form id="contact-form" class="space-y-4">
+                    <div>
+                        <label class="block text-neon text-sm font-bold mb-2 font-mono" for="senderName">Tên của bạn</label>
+                        <input class="w-full px-4 py-3 bg-dark/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon transition" id="senderName" type="text" placeholder="Nhập tên của bạn..." required>
+                    </div>
+                    <div>
+                        <label class="block text-neon text-sm font-bold mb-2 font-mono" for="senderMessage">Lời nhắn</label>
+                        <textarea class="w-full px-4 py-3 bg-dark/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-neon focus:ring-1 focus:ring-neon transition h-32 resize-none" id="senderMessage" placeholder="Bạn muốn trao đổi về dự án nào..." required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full py-3 bg-neon text-dark font-bold rounded-lg hover:bg-cyan-400 transition transform hover:scale-[1.02] flex items-center justify-center gap-2 group">
+                        <i class="fas fa-paper-plane group-hover:-translate-y-1 transition-transform"></i> Gửi Email Ngay
+                    </button>
+                </form>
+
+                <!-- Fallback / Copy Email -->
+                <div class="mt-6 pt-6 border-t border-white/10 text-center">
+                    <p class="text-gray-400 text-sm mb-2">Hoặc gửi trực tiếp qua email:</p>
+                    <div class="inline-flex items-center gap-2 bg-black/40 px-4 py-2 rounded-full border border-white/10 hover:border-neon transition cursor-pointer group" onclick="copyEmail()">
+                        <span class="text-neon font-mono" id="email-text">hoangdanghau19@gmail.com</span>
+                        <i class="fas fa-copy text-gray-400 group-hover:text-white transition"></i>
+                    </div>
+                    <p id="copy-success" class="text-green-400 text-xs mt-2 hidden opacity-0 transition-opacity font-mono">Đã copy email vào bộ nhớ tạm!</p>
+                </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="flex justify-center space-x-8 text-3xl">
+                <a href="https://github.com/DangHau19" class="text-gray-400 hover:text-neon hover:-translate-y-1 transition transform" title="GitHub"><i class="fab fa-github"></i></a>
+                <a href="https://www.tiktok.com/@raptrongta" class="text-gray-400 hover:text-neon hover:-translate-y-1 transition transform" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                <a href="https://m.me/danghau1911" class="text-gray-400 hover:text-neon hover:-translate-y-1 transition transform" title="Facebook Messenger"><i class="fab fa-facebook-messenger"></i></a>
+                <a href="https://www.facebook.com/danghau1911" class="text-gray-400 hover:text-neon hover:-translate-y-1 transition transform" title="Facebook"><i class="fab fa-facebook"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-6 text-center text-sm font-mono text-gray-500 border-t border-white/10 bg-black">
+        <p>Thiết kế & Xây dựng bởi Hoàng Đăng Hậu</p>
+        <p class="mt-1">&copy; 2025 - All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // 1. Matrix Rain Effect
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Fix High DPI Blur (Retina Display Support)
+        const dpr = window.devicePixelRatio || 1;
+        
+        let width, height;
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            
+            // Set actual size in memory (scaled to account for extra pixel density)
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+
+            // Normalize coordinate system to use css pixels
+            ctx.scale(dpr, dpr);
+            
+            // Re-setup font after resize/scale
+            ctx.font = '15pt monospace';
+            
+            // Recalculate columns if needed (simplified here)
+            // Note: In a full app, you might want to preserve column state or debounce this
+        }
+
+        // Initial set
+        resizeCanvas();
+
+        const cols = Math.floor(width / 20) + 1;
+        const ypos = Array(cols).fill(0);
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // Optional: reset columns or adapt them
+        });
+
+        function matrix() {
+            // Draw a semi-transparent black rectangle to create fade effect
+            ctx.fillStyle = '#0001';
+            // Use width/height from the logical css size
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.fillStyle = '#00f3ff'; // Neon color
+            // Font is already set in resizeCanvas, but setting here ensures it stays
+            ctx.font = '15pt monospace';
+
+            ypos.forEach((y, ind) => {
+                // Generate random character
+                const text = String.fromCharCode(Math.random() * 128);
+                const x = ind * 20;
+                ctx.fillText(text, x, y);
+
+                // Reset column if it goes off screen (randomly)
+                if (y > 100 + Math.random() * 10000) ypos[ind] = 0;
+                else ypos[ind] = y + 20;
+            });
+        }
+
+        setInterval(matrix, 50);
+
+        // 2. Typing Effect
+        const textElement = document.getElementById('typing-text');
+        const phrases = ["Full Stack Developer", "UI/UX Enthusiast", "Problem Solver", "Tech Lover"];
+        let phraseIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        let typeSpeed = 100;
+
+        function type() {
+            const currentPhrase = phrases[phraseIndex];
+            
+            if (isDeleting) {
+                textElement.textContent = currentPhrase.substring(0, charIndex - 1);
+                charIndex--;
+                typeSpeed = 50; // Deleting is faster
+            } else {
+                textElement.textContent = currentPhrase.substring(0, charIndex + 1);
+                charIndex++;
+                typeSpeed = 100; // Typing speed
+            }
+
+            if (!isDeleting && charIndex === currentPhrase.length) {
+                isDeleting = true;
+                typeSpeed = 2000; // Pause at end of phrase
+            } else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                phraseIndex = (phraseIndex + 1) % phrases.length;
+                typeSpeed = 500; // Pause before new phrase
+            }
+
+            setTimeout(type, typeSpeed);
+        }
+
+        document.addEventListener('DOMContentLoaded', type);
+
+        // 3. Mobile Menu Toggle
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('navbar-default');
+
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
+        });
+
+        // Close menu when clicking a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (!menu.classList.contains('hidden')) {
+                    menu.classList.add('hidden');
+                }
+            });
+        });
+
+        // 4. Scroll Spy (Active Nav Link)
+        const sections = document.querySelectorAll('.section-spy');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        function onScroll() {
+            let current = "";
+
+            sections.forEach((section) => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                // Offset adjustment for fixed header (approx 80px)
+                if (window.scrollY >= (sectionTop - 150)) {
+                    current = section.getAttribute("id");
+                }
+            });
+
+            navLinks.forEach((li) => {
+                li.classList.remove("active");
+                // Remove text-neon from all links first to reset style
+                li.classList.remove("text-neon");
+                li.classList.add("text-white");
+
+                if (li.getAttribute("href").includes(current)) {
+                    li.classList.add("active");
+                    li.classList.add("text-neon");
+                    li.classList.remove("text-white");
+                }
+            });
+        }
+
+        window.addEventListener("scroll", onScroll);
+
+        // 5. Handle Contact Form (Mailto Generator)
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('senderName').value;
+            const message = document.getElementById('senderMessage').value;
+            const myEmail = "hoangdanghau19@gmail.com";
+            
+            // Construct Subject and Body for mailto
+            const subject = encodeURIComponent(`Liên hệ từ Portfolio - ${name}`);
+            const body = encodeURIComponent(`Xin chào Hậu,\n\nTôi là: ${name}\n\nNội dung liên hệ:\n${message}\n\nTrân trọng.`);
+            
+            // Open default mail client
+            window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
+        });
+
+        // 6. Copy Email Function
+        function copyEmail() {
+            const email = document.getElementById('email-text').innerText;
+            navigator.clipboard.writeText(email).then(() => {
+                const successMsg = document.getElementById('copy-success');
+                successMsg.classList.remove('hidden');
+                // Small delay to allow display:block to apply before opacity transition
+                setTimeout(() => successMsg.classList.remove('opacity-0'), 10);
+                
+                // Hide after 2 seconds
+                setTimeout(() => {
+                    successMsg.classList.add('opacity-0');
+                    setTimeout(() => successMsg.classList.add('hidden'), 300);
+                }, 2000);
+            }).catch(err => {
+                console.error('Không thể copy text: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
