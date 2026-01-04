@@ -120,12 +120,36 @@
         .skill-fill {
             animation: loadSkill 2s ease-out forwards;
         }
+
+        /* Music Button Animation */
+        @keyframes pulse-music {
+            0% { box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 243, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 243, 255, 0); }
+        }
+        .music-playing {
+            animation: pulse-music 2s infinite;
+            border-color: #00f3ff;
+            color: #00f3ff;
+        }
     </style>
 </head>
 <body class="font-sans antialiased selection:bg-neon selection:text-dark">
 
     <!-- Background Animation -->
     <canvas id="matrix-canvas"></canvas>
+
+    <!-- Audio Element (Hidden) -->
+    <!-- Bạn có thể thay đổi link mp3 tại đây -->
+    <audio id="bg-music" loop>
+        <source src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Music Toggle Button (Fixed Bottom Left) -->
+    <button id="music-toggle" class="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-dark/80 border border-gray-600 text-gray-400 flex items-center justify-center transition-all hover:scale-110 hover:text-white hover:border-white focus:outline-none" title="Bật/Tắt nhạc">
+        <i class="fas fa-volume-mute text-lg"></i>
+    </button>
 
     <!-- Navigation -->
     <nav class="fixed w-full z-50 top-0 start-0 border-b border-white/10 bg-dark/80 backdrop-blur-md">
@@ -180,12 +204,12 @@
             <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center"><span class="text-neon">01.</span> Giới Thiệu</h2>
             <div class="flex flex-col md:flex-row gap-10 items-center">
                 <div class="w-full md:w-1/3 flex justify-center">
-                    <!-- Adjusted Image Container: Added mt-4 to move it down slightly -->
-                    <div class="relative w-64 h-64 md:w-80 md:h-80 mt-15">
+                    <!-- Adjusted Image Container -->
+                    <div class="relative w-64 h-64 md:w-80 md:h-80 mt-16">
                         <div class="absolute inset-0 border-2 border-neon rounded-lg transform translate-x-4 translate-y-4"></div>
                         <!-- Placeholder Avatar with Image -->
                         <div class="absolute inset-0 bg-gray-800 rounded-lg overflow-hidden border border-gray-700 flex items-center justify-center group">
-                             <!-- Removed opacity-80 and hover effect for clear image -->
+                             <!-- Sử dụng ảnh local của bạn -->
                              <img src="20240421_111759.jpg" alt="Hoàng Đăng Hậu" class="w-full h-full object-cover">
                         </div>
                     </div>
@@ -452,9 +476,6 @@
             
             // Re-setup font after resize/scale
             ctx.font = '15pt monospace';
-            
-            // Recalculate columns if needed (simplified here)
-            // Note: In a full app, you might want to preserve column state or debounce this
         }
 
         // Initial set
@@ -465,7 +486,6 @@
 
         window.addEventListener('resize', () => {
             resizeCanvas();
-            // Optional: reset columns or adapt them
         });
 
         function matrix() {
@@ -610,6 +630,61 @@
                 console.error('Không thể copy text: ', err);
             });
         }
+
+        // 7. Background Music Controller
+        const audio = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-toggle');
+        const musicIcon = musicBtn.querySelector('i');
+        let isPlaying = false;
+
+        function toggleMusic() {
+            if (isPlaying) {
+                audio.pause();
+                musicIcon.classList.remove('fa-volume-up');
+                musicIcon.classList.add('fa-volume-mute');
+                musicBtn.classList.remove('music-playing');
+            } else {
+                audio.play().then(() => {
+                    // Success
+                    musicIcon.classList.remove('fa-volume-mute');
+                    musicIcon.classList.add('fa-volume-up');
+                    musicBtn.classList.add('music-playing');
+                }).catch(error => {
+                    console.log("Audio play failed (user interaction needed):", error);
+                });
+            }
+            isPlaying = !isPlaying;
+        }
+
+        musicBtn.addEventListener('click', () => {
+             // Force state sync on click
+             if (audio.paused) {
+                 isPlaying = false;
+                 toggleMusic();
+             } else {
+                 isPlaying = true;
+                 toggleMusic();
+             }
+        });
+
+        // Attempt Auto-play on First User Interaction (Click or Scroll)
+        // This is a workaround for browser autoplay policies
+        function tryPlayMusic() {
+            if (audio.paused && !isPlaying) {
+                audio.play().then(() => {
+                    musicIcon.classList.remove('fa-volume-mute');
+                    musicIcon.classList.add('fa-volume-up');
+                    musicBtn.classList.add('music-playing');
+                    isPlaying = true;
+                    // Remove listeners once success
+                    window.removeEventListener('scroll', tryPlayMusic);
+                    document.body.removeEventListener('click', tryPlayMusic);
+                }).catch(e => console.log("Audio waiting for interaction"));
+            }
+        }
+
+        document.body.addEventListener('click', tryPlayMusic);
+        window.addEventListener('scroll', tryPlayMusic);
     </script>
 </body>
 </html>
